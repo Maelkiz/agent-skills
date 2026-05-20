@@ -55,7 +55,7 @@ project: remove gates for tooling that isn't configured, add project-specific
 ones (type-check, E2E suite, etc.).
 - [ ] Code compiles / runs without errors (if applicable)
 - [ ] Linter / formatter passes (if configured)
-- [ ] All existing tests pass (if a test suite exists)
+- [ ] No new test failures vs. baseline (if a test suite exists)
 - [ ] New tests pass (if this phase adds tests)
 - [ ] Manual smoke test: \<describe what to verify\>
 
@@ -75,10 +75,12 @@ Always include an extra final phase for updating documentation, even if it's jus
 
 ## Execution (after plan approval)
 
-Once the user approves the plan, work through phases one at a time:
+Once the user approves the plan, run the full test suite once to record a baseline of any pre-existing failures. This baseline is the comparison point for every phase — the gate is no *new* failures, not necessarily a fully green suite.
+
+Then work through phases one at a time:
 
 1. Implement the phase.
-2. Run all quality gates. Fix failures before continuing.
+2. Run all quality gates. For the test gate, compare against the baseline. Fix any new failures before continuing; pre-existing failures are not your responsibility in this phase.
 3. Verify every success criterion is met.
 4. **Stop and present a summary** of what was done and the gate results.
 5. Wait for explicit approval ("approve", "proceed", "lgtm", or similar).
