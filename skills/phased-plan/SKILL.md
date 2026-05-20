@@ -72,6 +72,10 @@ End the plan with:
 > moving to the next. To request changes, describe what to adjust and Claude
 > will revise before asking again.
 
+## Update Documentation
+
+Always include an extra final phase for updating documentation, even if it's just a README or inline code comments for non-trivial implementation. This ensures docs stay up to date. Do not forget agent context files such as `AGENTS.md` and `CLAUDE.md`.
+
 ## Execution (after plan approval)
 
 Once the user approves via `ExitPlanMode`, work through phases one at a time:
