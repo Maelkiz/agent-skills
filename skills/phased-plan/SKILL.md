@@ -2,22 +2,19 @@
 name: phased-plan
 description: >
   Use when the user wants a structured, phased implementation plan with commit-level granularity. Trigger on: "phased plan", "break into phases", "step by step implementation", "incremental approach", or any request to plan a multi-part feature or refactor before writing code. Prefer this over ad-hoc planning whenever the scope involves 3+ logical changes or multiple files.
-compatibility:
-  requires: claude-code  # EnterPlanMode / ExitPlanMode
 ---
 
 # Phased Plan Skill
 
 ## Core Behavior
 
-Invoke `EnterPlanMode` immediately, then produce a phased implementation plan.
+Enter plan mode immediately if supported, then produce a phased implementation plan.
 Each phase maps to exactly one logical commit — cohesive, reviewable, and
 independently shippable where possible. Favor more smaller phases over fewer
 large ones: they're easier to review, allow course-correction between phases,
 and produce a cleaner git history.
 
-If `EnterPlanMode` is unavailable (e.g. outside Claude Code), skip it and
-present the plan as a markdown document.
+If plan mode is unavailable, present the plan as a markdown document.
 
 ## Input
 
@@ -78,7 +75,7 @@ Always include an extra final phase for updating documentation, even if it's jus
 
 ## Execution (after plan approval)
 
-Once the user approves via `ExitPlanMode`, work through phases one at a time:
+Once the user approves the plan, work through phases one at a time:
 
 1. Implement the phase.
 2. Run all quality gates. Fix failures before continuing.
