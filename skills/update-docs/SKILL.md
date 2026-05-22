@@ -1,7 +1,7 @@
 ---
 name: update-docs
 description: >
-  Use when the user wants to ensure documentation is up to date, including README, inline code comments, or agent context files such as `AGENTS.md` and `CLAUDE.md`.
+  Use when the user wants to ensure documentation is up to date, including but not limited to docs/, README, inline code comments, or agent context files such as `AGENTS.md` and `CLAUDE.md`.
 ---
 
 # Update Docs Skill
