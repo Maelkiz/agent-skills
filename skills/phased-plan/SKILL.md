@@ -8,13 +8,34 @@ description: >
 
 ## Core Behavior
 
-Enter plan mode immediately if supported, then produce a phased implementation plan.
-Each phase maps to exactly one logical commit — cohesive, reviewable, and
+Enter plan mode immediately if supported, then produce a phased implementation
+plan. Each phase maps to exactly one logical commit — cohesive, reviewable, and
 independently shippable where possible. Favor more smaller phases over fewer
 large ones: they're easier to review, allow course-correction between phases,
 and produce a cleaner git history.
 
 If plan mode is unavailable, present the plan as a markdown document.
+
+## Avoid Broken Commits
+
+Each commit must represent a functioning state of the program. Thus, when
+replacing existing functionality, do not remove the old implementation before
+the new implementation is integrated and wired in. Prefer
+"introduce → switch → remove" rather than "remove → replace". 
+
+### Example:
+
+**Bad:**
+
+1. Rip out old CLI flag implementation (broken state)
+2. Add new implementation (fixes previous commit)
+
+**Good:**
+
+1. Introduce new implementation alongside old (both exist)
+2. Switch CLI flag to new implementation
+3. Remove old implementation
+
 
 ## Input
 
@@ -71,16 +92,24 @@ End the plan with:
 
 ## Update Documentation
 
-Always include an extra final phase for updating documentation, even if it's just a README or inline code comments for non-trivial implementation. This ensures docs stay up to date. Do not forget agent context files such as `AGENTS.md` and `CLAUDE.md`.
+Always include an extra final phase for updating documentation, even if it's
+just a README or inline code comments for non-trivial implementation. This
+ensures docs stay up to date. Do not forget agent context files such as
+`AGENTS.md` and `CLAUDE.md`.
 
 ## Execution (after plan approval)
 
-Once the user approves the plan, run the full test suite once to record a baseline of any pre-existing failures. This baseline is the comparison point for every phase — the gate is no *new* failures, not necessarily a fully green suite.
+Once the user approves the plan, run the full test suite once to record a
+baseline of any pre-existing failures. This baseline is the comparison point
+for every phase — the gate is no *new* failures, not necessarily a fully
+green suite.
 
 Then work through phases one at a time:
 
 1. Implement the phase.
-2. Run all quality gates. For the test gate, compare against the baseline. Fix any new failures before continuing; pre-existing failures are not your responsibility in this phase.
+2. Run all quality gates. For the test gate, compare against the baseline.
+   Fix any new failures before continuing; pre-existing failures are not
+   your responsibility in this phase.
 3. Verify every success criterion is met.
 4. **Stop and present a summary** of what was done and the gate results.
 5. Wait for explicit approval ("approve", "proceed", "lgtm", or similar).
