@@ -73,9 +73,6 @@ Use this exact structure for every phase:
 
 **Quality gates** — all must pass before the phase is complete.
 
-Adapt to the project: remove gates for tooling that isn't configured, add
-project-specific ones (type-check, E2E suite, etc.).
-
 - [ ] Code compiles / runs without errors (if applicable)
 - [ ] Linter / formatter passes (if configured)
 - [ ] No new test failures vs. baseline (if a test suite exists)
@@ -86,15 +83,12 @@ project-specific ones (type-check, E2E suite, etc.).
 
 ---
 
-End the plan with this footer (paste verbatim):
+Adapt to the project: remove gates for tooling that isn't configured, add
+project-specific ones (type-check, E2E suite, etc.).
 
-> After each phase, I will pause for your review before committing and moving
-> to the next. To request changes, describe what to adjust and I will revise
-> before asking again.
+## Updating Documentation
 
-## Update Documentation
-
-Always include an extra final phase for updating documentation, even if it's
+Consider including an extra final phase for updating documentation, even if it's
 just a README or inline code comments for non-trivial implementation. This
 ensures docs stay up to date. Do not forget agent context files such as
 `AGENTS.md` and `CLAUDE.md`.
