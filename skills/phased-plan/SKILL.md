@@ -18,6 +18,9 @@ markdown document. Each phase of the plan should map to exactly one logical
 commit — cohesive, reviewable, and independently shippable where possible.
 Favor more smaller phases over fewer large ones: they're easier to review,
 allow course-correction between phases, and produce a cleaner git history.
+The plan should clearly communicate the phased approach outlined in this 
+file, such that an agent, which hasn't just read this skill, can pick up 
+the plan and execute it correctly.
 
 ## Avoid Broken Commits
 
