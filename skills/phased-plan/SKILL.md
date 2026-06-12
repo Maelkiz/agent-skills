@@ -49,13 +49,7 @@ the user what they want to implement before proceeding.
 
 ## Before Planning: Explore First
 
-Explore just enough to plan accurately — not the entire codebase:
-
-1. Run `ls` / `find` and read the README to understand project shape.
-2. Cap exploration at ~10 files; if scope is still unclear, ask the user to
-   point to the relevant module rather than exploring further.
-3. Identify natural seams where work can be split (data model, API, UI,
-   tests, docs) and order phases so each builds cleanly on the last.
+Cap exploration at ~10 files; if scope is still unclear, ask the user to point to the relevant module rather than exploring at random.
 
 ## Phase Format
 
