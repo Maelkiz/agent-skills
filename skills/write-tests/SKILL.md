@@ -2,6 +2,12 @@
 
 1. Inspect the existing test suite structure and discover the project's test
    framework and commands. Never assume a particular language or framework.
+   Use semble to locate test files and framework setup efficiently:
+
+   ```bash
+   semble search "test setup configuration framework" . --top-k 5
+   semble search "describe it expect assert test" . --top-k 5
+   ```
 
 2. Before writing tests, identify the observable behaviour that must be
    preserved or introduced.

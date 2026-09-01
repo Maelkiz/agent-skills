@@ -49,7 +49,11 @@ the user what they want to implement before proceeding.
 
 ## Before Planning: Explore First
 
-Cap exploration at ~10 files; if scope is still unclear, ask the user to point to the relevant module rather than exploring at random.
+Cap exploration at ~10 files; if scope is still unclear, ask the user to point to the relevant module rather than exploring at random. Use semble to locate relevant code efficiently rather than browsing directories:
+
+```bash
+semble search "<task-relevant query>" . --top-k 5
+```
 
 ## Phase Format
 

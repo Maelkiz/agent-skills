@@ -27,7 +27,13 @@ Record: build command, test command (all tests + single file/package), lint/form
 
 **Languages & frameworks** — version constraints, framework version, package manager.
 
-**Entry points** — main server/CLI entry, route/controller definitions, config loading.
+**Entry points** — main server/CLI entry, route/controller definitions, config loading. Use semble to locate them efficiently:
+
+```bash
+semble search "main entry point server start" . --top-k 5
+semble search "route definitions controller handler" . --top-k 5
+semble search "config load environment" . --top-k 5
+```
 
 **Module inventory** — list top-level modules. For each: name, approximate file count, one-sentence responsibility.
 
@@ -55,7 +61,14 @@ git log --oneline --since="3 months ago" --grep="fix" -- <scope> | head -20
 git log --since="3 months ago" --name-only --pretty=format: -- <scope> | sort | uniq -c | sort -rn | head -15
 ```
 
-**Implicit conventions** — read 5-10 representative files across different areas. Look for: file naming patterns, directory organization, naming suffixes (`*Service`, `*Handler`), error handling patterns, logging patterns.
+**Implicit conventions** — use semble to surface representative files across different areas rather than reading at random:
+
+```bash
+semble search "error handling logging" . --top-k 5
+semble search "service handler middleware" . --top-k 5
+```
+
+Read the top results. Look for: file naming patterns, directory organization, naming suffixes (`*Service`, `*Handler`), error handling patterns, logging patterns.
 
 ---
 
