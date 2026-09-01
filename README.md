@@ -4,6 +4,15 @@
 
 This is a set of language agnostic agent skills focused on improving context management and enforcing good practices while keeping you in the loop to ensure alignment.
 
+## Prerequisites
+
+- **[Semble](https://github.com/MinishLab/semble)** — fast code search for AI agents. Skills use semble to locate relevant code without grepping blindly. Install via `pip install semble` and add it as an MCP server in your Claude Code config.
+
+## Recommended companions
+
+- **[caveman](https://github.com/juliusbrussee/caveman)** — local proxy and hooks that compress agent input and output to reduce token usage
+- **[rtk](https://github.com/rtk-ai/rtk)** — Rust Token Killer, a CLI proxy that cuts token usage 60–90% on common dev operations
+
 ## The Skills
 
 ### `/phased-plan`
