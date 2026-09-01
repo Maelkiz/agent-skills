@@ -1,4 +1,4 @@
-# Agents Skills
+# Agent Skills
 
 ## What is this?
 
