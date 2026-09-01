@@ -2,7 +2,7 @@
 
 ## What is this?
 
-This is a set of language agnostic agent skills for improving context management ergonomics and enforcing good practices while keeping you in the loop to ensure alignment.
+This is a set of language agnostic agent skills focused on improving context management and enforcing good practices while keeping you in the loop to ensure alignment.
 
 ## The Skills
 
