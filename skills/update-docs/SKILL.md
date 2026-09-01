@@ -15,7 +15,12 @@ description: >
 
 Documentation drift is addressed in three phases: **Inventory**, **Audit**, and **Execution**. Each phase builds on the last.
 
-Do not make documentation changes before completing the audit. This prevents incomplete exploration from producing noisy or contradictory edits.
+Two rules the whole workflow hangs on:
+
+- **Scope by evidence, not by reading everything.** Deterministic signals (broken references, docs older than the code they describe) build the worklist. Reading source files speculatively burns context before the first fix.
+- **Never write a claim you didn't verify.** Every command, path, flag, default, and example you write or keep must be checked against the current code. The failure mode of doc syncing is replacing old guesses with new ones.
+
+Do not make documentation changes before completing the audit. Editing while auditing loses the cross-doc picture and produces contradictory fixes.
 
 If `$ARGUMENTS` is provided, treat it as a scope hint (e.g. "README only", "CLAUDE.md and inline comments"). If empty, treat the scope as all relevant documentation in the project.
 
@@ -23,104 +28,102 @@ If `$ARGUMENTS` is provided, treat it as a scope hint (e.g. "README only", "CLAU
 
 ## Phase 1 — Inventory
 
-The goal is to locate relevant documentation and identify the authoritative sources of truth for the claims those documents make.
+Locate relevant documentation and build a worklist of what to audit.
 
 ### 1a. Find documentation
 
 Look for:
 
-- Top-level documentation: `README*`, `CHANGELOG*`, `CONTRIBUTING*`, `ARCHITECTURE*`
+- Top-level docs: `README*`, `CHANGELOG*`, `CONTRIBUTING*`, `ARCHITECTURE*`
 - Documentation directories: `docs/`
-- Markdown and other documentation files: `*.md`, `*.mdx`, `*.rst`
-- Agent context files: `CLAUDE.md`, `AGENTS.md`, `.cursorrules` and equivalent files at any relevant directory level
-- Inline documentation: docstrings, JSDoc, rustdoc, and comments describing public APIs, behaviour, invariants, algorithms, configuration, or constraints
-- Configuration documentation: comments in `Makefile`, CI workflows, Docker files, configuration files, etc. that explain usage or behaviour
-- Examples: `examples/`, `*.example.*`, and executable code blocks embedded in documentation
-- Documentation referenced by other documentation
+- Markdown and other doc files: `*.md`, `*.mdx`, `*.rst`
+- Agent context files: `CLAUDE.md`, `AGENTS.md`, `.cursorrules` at any directory level
+- Inline documentation: docstrings, JSDoc, rustdoc, and comments describing public APIs, behaviour, invariants, configuration, or constraints
+- Configuration documentation: comments in `Makefile`, CI workflows, Docker files that explain usage
+- Examples: `examples/`, `*.example.*`, executable code blocks in docs
 
-Do not treat every code comment as documentation. Ignore trivial comments that merely restate what the code obviously does.
+Do not treat every code comment as documentation. Ignore trivial comments that merely restate what the code obviously does. Respect the requested scope.
 
-Respect the requested scope. Do not expand into unrelated documentation merely because it exists.
+### 1b. Prioritize by staleness signals
 
-### 1b. Map code ground truth
+Two fast signals flag the highest-risk docs without reading everything:
 
-For each documentation area, identify the authoritative source for its claims.
+**Broken references** — dead links, missing file paths, invalid anchors. Check with:
+```bash
+grep -rn '\[.*\](.*\.md)' <doc-file>  # internal links
+grep -rn '`[^`]\+\.[a-z]\+`' <doc-file> | tr -d '`'  # backtick file refs
+```
 
-Examples:
+**Age gap** — a doc modified before the code it references is a suspect:
+```bash
+git log --oneline -1 --format="%ar" -- <doc-file>      # doc's last change
+git log --oneline -1 --format="%ar" -- <source-file>   # code's last change
+```
 
-- Public API claims → actual exported functions, classes, types, methods, routes, or CLI definitions
-- Function signatures → source declarations
-- Key data shapes → types, schemas, serializers, or parsers
-- How-to-run instructions → package scripts, `Makefile` targets, build configuration, or equivalent
-- Dependency requirements → package manifests and lockfiles where appropriate
-- Configuration options → schemas, parsers, defaults, and validation logic
-- Architecture claims → directory structure, module boundaries, and imports
-- Behaviour descriptions → the implementation and relevant tests
-- Examples → the referenced API and, where possible, the project's actual toolchain
+Docs with broken references or a significant age gap go to the top of the worklist.
 
-Explore according to relevance rather than an arbitrary file-count limit. Start with documentation and the code directly needed to verify its claims. Expand only when necessary.
+### 1c. Map code ground truth
 
-If a claim cannot be confidently verified without substantially expanding the scope, report it as **unverified** rather than guessing.
+For each doc in the worklist, identify the authoritative source for its claims:
+
+- Public API claims → actual exported functions, classes, types, routes, CLI definitions
+- How-to-run → package scripts, `Makefile` targets, build configuration
+- Dependency requirements → package manifests and lockfiles
+- Configuration options → schemas, parsers, defaults, validation logic
+- Architecture claims → directory structure, module boundaries, imports
+- Behaviour descriptions → implementation and relevant tests
 
 ### Phase 1 output
 
-Produce a concise manifest:
+Record findings in a ledger at `/tmp/docs-findings.md` — one section per doc. All findings from Phase 2 go here before any edits happen. The ledger survives context compaction.
 
-| Doc file / location | Claims to verify |
-|---|---|
-| `README.md` → Installation | Package manager, runtime version, installation steps |
-| `CLAUDE.md` → Commands | Build, test, and development commands |
-| `src/auth/index.ts` → docstring | `login()` signature and behaviour |
-| ... | ... |
+```markdown
+# Doc Findings
 
-If the requested scope is substantially larger than expected, ask whether the user wants to narrow it before continuing.
+## README.md
+...
+
+## CLAUDE.md
+...
+```
 
 ---
 
 ## Phase 2 — Audit
 
-Work through every relevant item in the manifest. Verify claims against the current project state.
-
-Do not rely on memory or assumptions when the claim can be checked directly.
+Work through every doc in the worklist. Verify claims against current project state. Do not rely on memory or assumptions when a claim can be checked directly.
 
 ### Claim types and how to verify them
 
 | Claim type | How to verify |
 |---|---|
-| **Function/API signature** | Read the actual source; compare name, parameters, return type, and relevant semantics |
-| **Behaviour description** | Trace the relevant code path and consult tests where available |
-| **Example code** | Run, compile, or otherwise validate it when practical; otherwise manually verify against the current API |
-| **How-to-run instruction** | Confirm the command exists and run it when safe and reasonably inexpensive |
-| **Dependency/version requirement** | Check package manifests, lockfiles, toolchain configuration, or equivalent sources |
-| **File path reference** | Confirm the path exists |
-| **Cross-reference/link** | Confirm the target, heading, anchor, or URL resolves |
-| **Architecture claim** | Verify against the current project structure and module relationships |
-| **Configuration option** | Check the schema, parser, defaults, and validation logic |
-| **CLI/API usage** | Verify against the actual command/API definition and, where practical, execute it |
-| **Terminology/concepts** | Verify that terminology matches the project's current implementation and conventions |
-
-Prefer automated verification where it is available.
-
-For executable examples, commands, or other behaviour that can be validated through the project's existing test/build tooling, use that tooling rather than relying solely on manual reasoning.
+| **Function/API signature** | Read the actual source; compare name, parameters, return type |
+| **Behaviour description** | Trace the relevant code path; consult tests |
+| **Example code** | Run, compile, or validate against current API |
+| **How-to-run instruction** | Confirm command exists; run it when safe and cheap |
+| **Dependency/version** | Check manifests, lockfiles, toolchain config |
+| **File path reference** | Confirm path exists (`ls`) |
+| **Cross-reference/link** | Confirm target resolves |
+| **Architecture claim** | Verify against current structure and module relationships |
+| **Configuration option** | Check schema, parser, defaults, validation |
 
 ### Findings classification
 
-For every discrepancy, record:
+For every discrepancy, add to the ledger under one of:
 
-- **Stale** — documents something that no longer exists or has materially changed
-- **Missing** — an important, user-relevant behaviour, API, configuration option, workflow, or requirement exists but is absent where a reader would reasonably expect it
-- **Inaccurate** — the documented thing still exists, but the description is incorrect
-- **Broken example** — an example no longer works, compiles, or matches the current API
-- **Broken reference** — a dead link, missing file, invalid anchor, or other unresolved reference
-- **Unverified** — the claim could not be confidently verified within reasonable scope
+- **Stale** — documented thing still exists but has materially changed (wrong signature, renamed flag, outdated example)
+- **Cruft** — documented thing no longer exists; the content should be removed
+- **Missing** — important behaviour, API, or requirement exists but is absent where a reader would expect it
+- **Broken reference** — dead link, missing file, invalid anchor
+- **Unverified** — claim cannot be confidently verified within reasonable scope
 
-Accurate, up-to-date claims require no finding.
+Accurate claims require no finding. Do not manufacture problems because something is undocumented — documentation should be proportional to the project's needs.
 
-Do not manufacture documentation problems simply because something is undocumented. Documentation should remain proportional to the project's needs and audience.
+**Code suspects:** when doc and code disagree and the code looks like the bug (doc describes intended behaviour), flag it rather than silently rewriting the doc to canonize the accident. Note it in the ledger under `[Code suspect]`.
 
 ### Phase 2 output
 
-Present a structured findings report before making edits:
+Structured findings report in the ledger:
 
 ```text
 FINDINGS
@@ -128,14 +131,52 @@ FINDINGS
 
 README.md — Installation
 
-  [Stale]          Node >=16 required; package.json says >=20
-  [Missing]        Required GITHUB_TOKEN environment variable is not documented
+  [Stale]           Node >=16 required; package.json says >=20
+  [Missing]         Required GITHUB_TOKEN env var is not documented
 
 CLAUDE.md — Commands
 
-  [Inaccurate]     `npm run build` is now `npm run compile`
+  [Inaccurate]      `npm run build` is now `npm run compile`
 
 src/auth/index.ts — docstring
 
-  [Stale]          login() no longer accepts a password parameter
-  [Broken example] Example still calls login("user", "pass")
+  [Cruft]           login() no longer accepts a password parameter
+  [Broken reference] Link to /docs/auth.md — file deleted
+```
+
+---
+
+## Phase 3 — Execution
+
+Fix docs **one at a time, foundational docs first** (architecture/reference before READMEs and guides that cite them, so downstream fixes can rely on upstream ones).
+
+- **Stale** → correct in place, re-verifying the replacement claim against code (not from memory of Phase 2)
+- **Cruft** → delete the content. For ADRs/design docs, annotate "Superseded by …" and leave — they are records of decisions, not living docs
+- **Missing** → write the content proportionally; a new config knob wants a table row, not an essay
+- **Broken reference** → find where the target moved (`git log --follow`) and update; if deleted and no successor, remove the reference
+
+**Editing standards:**
+
+- **Minimal diffs** — don't reflow, reformat, or re-voice text whose content isn't changing; review noise buries real fixes
+- **Match voice** — a refresh should be invisible except where it's a correction
+- **No placeholders** — never commit TODO/TBD; document fully or record as remaining gap in the report
+- **Never hand-edit generated docs** — fix the source or generator config and regenerate; note the generator in the report
+- **No fabricated changelog entries** — backfill only from `git log` evidence, in the file's existing format
+
+---
+
+## Phase 4 — Validate and commit
+
+**Cross-doc consistency sweep** — re-read every doc this run touched, checking the set: same feature named the same way everywhere; no doc still cites content this run moved or removed; no introduced contradictions.
+
+**Report remaining gaps** — anything found but not fixable without human input, and any code suspects flagged during audit.
+
+Stage only the doc files this run touched:
+
+```bash
+git add <docs touched>
+git commit -m "docs: update documentation — <summary>
+
+<Stale: X fixed | Cruft: Y removed | Missing: Z filled | Remaining: N>
+"
+```
