@@ -8,6 +8,14 @@ This is a set of language agnostic agent skills focused on improving context man
 
 - **[Semble](https://github.com/MinishLab/semble)** — fast code search for AI agents. Skills use semble to locate relevant code without grepping blindly. Install via `pip install semble` and add it as an MCP server in your Claude Code config.
 
+## Installation
+
+Run this command from the root of the repo to symlink the skills into your Claude Code skills directory (change the path if using another harness):
+
+```bash
+mkdir -p ~/.claude/skills && ln -sf "$(pwd)"/skills/*/ ~/.claude/skills/
+```
+
 ## Recommended companions
 
 - **[caveman](https://github.com/juliusbrussee/caveman)** — local proxy and hooks that compress agent input and output to reduce token usage
